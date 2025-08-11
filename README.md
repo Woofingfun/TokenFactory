@@ -1,65 +1,177 @@
 # Jace TokenFactory
 
 ```bash
-# A decentralized token creation platform on Binance Smart Chain (BSC)
-# Create, manage, and explore tokens with a hacker-style interface
-# Powered by BSC | Contract: 0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6
+# Decentralized token creator on Binance Smart Chain (BSC)
+# Build tokens, hack the vibe
+# Contract: 0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6
+```
 
-# Why Jace TokenFactory?
-# - Low gas fees on BSC
-# - Secure token creation with metadata support
-# - Terminal aesthetic for the cyberpunk coder in you
+## > Mission
 
-{
-  "connectWallet": "Link MetaMask to BSC (chain ID: 56)",
-  "createToken": "Mint new tokens with name, symbol, and 100T premine",
-  "fetchMyTokens": "List up to 100 tokens created by your address",
-  "fetchAllTokens": "Explore the latest 100 tokens on the platform",
-  "ui": "Hacker-style interface with matrix background and VT323 font",
-  "network": "Binance Smart Chain (BSC) for fast, cheap transactions"
-}
+Jace TokenFactory: a terminal-style DApp to mint tokens on BSC (chain ID: 56). Cyberpunk UI, fast, secure.
+- Connect MetaMask to BSC.
+- Create tokens (name, symbol, 100T premine).
+- List your tokens or latest 100 on platform.
+- Matrix animations, VT323 font.
 
-# Ensure you have the following:
-- MetaMask installed (https://metamask.io)
-- BNB in your wallet for gas fees
-- A modern browser (Chrome, Firefox, etc.)
-- Node.js for local server (optional, for development)
+```bash
+# Why this?
+# - BSC = low gas
+# - Secure minting + metadata
+# - Hacker aesthetic
+```
 
-# Clone the repo
-git clone https://github.com/<your-username>/jace-tokenfactory.git
+## > Setup
+
+```bash
+# Need:
+- MetaMask (metamask.io)
+- BNB for gas
+- Browser (Chrome/Firefox)
+- Node.js (optional, dev)
+
+# Clone
+git clone https://github.com/YOUR_USERNAME/jace-tokenfactory.git
 cd jace-tokenfactory
 
-# Install dependencies (if using a local server)
+# Install
 npm install
 
-# Run a local server
+# Run
 npx serve
+```
 
-# Open http://localhost:3000 (or your hosted URL) in a browser
+## > How to Use
 
-# Click "> Connect Wallet"
-# Switch MetaMask to BSC (chain ID: 56)
-# Ensure BNB balance for gas
+1. **Open DApp**:
+   ```bash
+   # Visit http://localhost:3000
+   ```
 
-# Enter token name (e.g., "JaceCoin") and symbol (e.g., "JACE")
-# Click "> Create Token"
-# Confirm transaction in MetaMask
-# View token address on BscScan
+2. **Connect**:
+   ```bash
+   # Click "> Connect Wallet"
+   # Set MetaMask to BSC (chain ID: 56)
+   # Got BNB? Good.
+   ```
 
-# Click "> Fetch My Tokens" to see your created tokens
-# Click "> Fetch Latest Tokens" to explore platform tokens
+3. **Mint Token**:
+   ```bash
+   # Input name (e.g., "JaceCoin"), symbol (e.g., "JACE")
+   # Click "> Create Token"
+   # Sign in MetaMask
+   # Check BscScan
+   ```
 
-# Click "> Copy" next to any token address
-# Paste into BscScan or your wallet
+4. **View Tokens**:
+   ```bash
+   # "> Fetch My Tokens" for yours
+   # "> Fetch Latest Tokens" for all
+   ```
 
-// TokenFactory Contract
+5. **Copy**:
+   ```bash
+   # Click "> Copy" for token address
+   ```
+
+## > Contract
+
+```solidity
+// TokenFactory
 address: 0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6
-network: Binance Smart Chain (BSC)
-abi: Available in index.html (tokenFactoryABI, tokenABI)
+network: BSC
+abi: In index.html
+```
 
+Verify: [BscScan](https://bscscan.com/address/0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6)
+
+## > Config
+
+```javascript
 const bsc = {
   chainId: 56,
-  name: 'Binance Smart Chain',
-  explorerUrl: 'https://bscscan.com',
-  rpcUrl: 'https://bsc-dataseed.binance.org/'
+  name: "Binance Smart Chain",
+  explorerUrl: "https://bscscan.com",
+  rpcUrl: "https://bsc-dataseed.binance.org/"
 };
+```
+
+## > Dev
+
+```bash
+# Edit index.html
+# VT323 font = terminal vibe
+# Matrix bg in canvas
+# Alt RPCs:
+# - https://bsc-dataseed1.ninicoin.io/
+# - https://bsc-dataseed2.defibit.io/
+```
+
+## > Debug
+
+```bash
+# Wallet dead?
+> Check MetaMask, BSC setup, BNB balance
+
+# Mint failed?
+> Need more BNB
+> Console for errors
+
+# RPC down?
+> Try alt RPCs
+> https://docs.bscscan.com/misc-tools-and-utilities/public-rpc-nodes
+```
+
+## > Security
+
+```bash
+# Verify contract on BscScan
+# Keep keys safe
+# Gas: 0.01-0.1 BNB
+# Testnet (chain ID: 97) for practice
+```
+
+## > Contribute
+
+```bash
+# Fork it
+# Branch
+git checkout -b feature/your-stuff
+# Commit
+git commit -m "New stuff"
+# Push
+git push origin feature/your-stuff
+```
+
+## > License
+
+```bash
+# MIT License
+# (c) 2025 Jace TokenFactory
+```
+
+## > Contact
+
+```bash
+# Bugs: GitHub issues
+# Ideas: DM @YOUR_TWITTER
+# Chat: t.me/YOUR_TELEGRAM
+```
+
+```bash
+# Code. Mint. Hack.
+# Jace TokenFactory © 2025
+```
+```
+
+---
+
+### Instructions
+- **Copy**: Select all, copy, paste into your GitHub repo's `README.md`.
+- **Edit**:
+  - Replace `YOUR_USERNAME` with your GitHub username.
+  - Swap `@YOUR_TWITTER` and `t.me/YOUR_TELEGRAM` with your actual handles, or delete if not applicable.
+- **Preview**: GitHub renders it with code blocks and hacker style.
+- **Optional**: Add a screenshot with `![UI](screenshots/ui.png)` after uploading an image to your repo.
+
+This is the one file, trimmed down, hacker vibe intact. If it’s still not what you need, tell me exactly what’s off, and I’ll fix it!
