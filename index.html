@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jace TokenFactory</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'VT323', monospace; 
+            background: #000; 
+            color: #0f0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.6; 
+            overflow-x: hidden; 
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 25px; 
+            background: rgba(0, 255, 0, 0.1); 
+            border: 2px solid #0f0; 
+            border-radius: 5px; 
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3); 
+            position: relative; 
+        }
+        h1 { 
+            text-align: center; 
+            color: #0f0; 
+            font-size: clamp(2em, 6vw, 3em); 
+            margin-bottom: 30px; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 10px #0f0; 
+            animation: flicker 1.5s infinite alternate; 
+        }
+        .section { 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border: 1px solid #0f0; 
+            border-radius: 5px; 
+        }
+        h2 { 
+            color: #0f0; 
+            font-size: clamp(1.2em, 4vw, 1.8em); 
+            margin-bottom: 15px; 
+            text-shadow: 0 0 5px #0f0; 
+        }
+        .button { 
+            background: transparent; 
+            color: #0f0; 
+            padding: 10px 20px; 
+            border: 2px solid #0f0; 
+            border-radius: 5px; 
+            font-family: 'VT323', monospace; 
+            font-size: 1.2em; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            position: relative; 
+            overflow: hidden; 
+            margin: 5px; 
+        }
+        .button:hover { 
+            background: #0f0; 
+            color: #000; 
+            box-shadow: 0 0 15px #0f0; 
+            transform: translateY(-2px); 
+        }
+        .button:disabled { 
+            color: #555; 
+            border-color: #555; 
+            cursor: not-allowed; 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 2px solid #0f0; 
+            border-radius: 5px; 
+            background: #111; 
+            color: #0f0; 
+            font-family: 'VT323', monospace; 
+            font-size: 1.2em; 
+        }
+        input::placeholder { 
+            color: #555; 
+        }
+        .status { 
+            margin-top: 10px; 
+            font-size: 1em; 
+            color: #0f0; 
+            text-shadow: 0 0 5px #0f0; 
+        }
+        .wallet-info { 
+            color: #0f0; 
+            font-weight: 600; 
+            word-break: break-all; 
+        }
+        .token-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            background: rgba(0, 0, 0, 0.9); 
+        }
+        .token-table th, .token-table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #0f0; 
+        }
+        .token-table th { 
+            background: #111; 
+            color: #0f0; 
+            text-shadow: 0 0 5px #0f0; 
+        }
+        .copy-btn { 
+            background: transparent; 
+            color: #0f0; 
+            border: 1px solid #0f0; 
+            padding: 5px 10px; 
+            font-size: 1em; 
+            border-radius: 5px; 
+        }
+        .copy-btn:hover { 
+            background: #0f0; 
+            color: #000; 
+        }
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 1em; 
+            color: #0f0; 
+        }
+        .footer a { 
+            color: #0f0; 
+            text-decoration: none; 
+        }
+        .footer a:hover { 
+            text-decoration: underline; 
+            text-shadow: 0 0 10px #0f0; 
+        }
+        .how-it-works { 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 20px; 
+            border: 1px solid #0f0; 
+            border-radius: 5px; 
+            margin-top: 20px; 
+        }
+        .how-it-works ul { 
+            list-style-type: none; 
+            padding-left: 20px; 
+            margin-top: 10px; 
+        }
+        .how-it-works li { 
+            margin-bottom: 12px; 
+            font-size: 1.1em; 
+            position: relative; 
+        }
+        .how-it-works li::before { 
+            content: ">"; 
+            color: #0f0; 
+            position: absolute; 
+            left: -20px; 
+        }
+        .how-it-works .highlight { 
+            color: #fff; 
+            text-shadow: 0 0 5px #fff; 
+        }
+        canvas { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: -1; 
+            opacity: 0.2; 
+        }
+        @keyframes flicker { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.8; } 
+            100% { opacity: 1; } 
+        }
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .section, .how-it-works { padding: 15px; }
+            .button { width: 100%; padding: 10px; }
+            .token-table { display: block; overflow-x: auto; }
+            .token-table th, .token-table td { font-size: 0.9em; padding: 8px; }
+            .token-table tr { display: block; margin-bottom: 10px; border-bottom: 1px solid #0f0; }
+            .token-table td { display: block; text-align: left; }
+            .token-table td button { width: 100%; margin: 5px 0; }
+            .how-it-works ul { padding-left: 15px; }
+            .how-it-works li { font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="container">
+        <h1>Jace TokenFactory</h1>
+        <div class="section">
+            <h2>Connect to BSC</h2>
+            <button id="connectButton" class="button">> Connect Wallet</button>
+            <p>Wallet: <span id="walletAddress" class="wallet-info">Not connected</span></p>
+            <div id="networkStatus" class="status">> Click to connect...</div>
+        </div>
+        <div class="section" id="createTokenSection">
+            <h2>Create Token</h2>
+            <input type="text" id="tokenName" placeholder="Token Name (e.g., JaceCoin)">
+            <input type="text" id="tokenSymbol" placeholder="Token Symbol (e.g., JACE)">
+            <button id="createToken" class="button">> Create Token</button>
+            <div id="createStatus" class="status"></div>
+        </div>
+        <div class="section" id="myTokensSection">
+            <h2>My Created Tokens</h2>
+            <button id="fetchMyTokens" class="button">> Fetch My Tokens</button>
+            <table class="token-table">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Metadata</th>
+                    </tr>
+                </thead>
+                <tbody id="tokensBody"></tbody>
+            </table>
+            <div id="tokensStatus" class="status"></div>
+        </div>
+        <div class="section" id="allTokensSection">
+            <h2>Latest Tokens</h2>
+            <button id="fetchAllTokens" class="button">> Fetch Latest Tokens</button>
+            <table class="token-table">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Metadata</th>
+                    </tr>
+                </thead>
+                <tbody id="allTokensBody"></tbody>
+            </table>
+            <div id="allTokensStatus" class="status"></div>
+        </div>
+        <div class="how-it-works">
+            <h2>How It Works?</h2>
+            <p>Launch your token on BSC with Jace TokenFactory! It’s fast and secure:</p>
+            <ul>
+                <li><span class="highlight">Connect Your Wallet</span>: Use MetaMask to connect to BSC (chain ID: 56). Ensure you have enough <span class="highlight">BNB</span> for gas fees.</li>
+                <li><span class="highlight">Create Your Token</span>: Enter a name (e.g., “JaceCoin”) and symbol (e.g., “JACE”). A premine of 100 trillion tokens is minted to your wallet.</li>
+                <li><span class="highlight">View Your Tokens</span>: Fetch the latest 100 tokens you’ve created, including addresses, names, symbols, and metadata.</li>
+                <li><span class="highlight">Explore Latest Tokens</span>: View the latest 100 tokens created by all users on the platform.</li>
+                <li><span class="highlight">Secure & Efficient</span>: Built on BSC for low fees and secure creation with metadata support.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            Powered by <a href="https://bscscan.com/" target="_blank">BSC</a> | Jace TokenFactory © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, accounts, tokenFactoryContract;
+        const tokenFactoryAddress = "0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6";
+
+        const tokenFactoryABI = [
+            {
+                inputs: [
+                    { internalType: "string", name: "name", type: "string" },
+                    { internalType: "string", name: "symbol", type: "string" }
+                ],
+                name: "createToken",
+                outputs: [{ internalType: "address", name: "", type: "address" }],
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "creator", type: "address" }
+                ],
+                name: "getLatestTokensByCreator",
+                outputs: [
+                    { internalType: "address[]", name: "tokens", type: "address[]" }
+                ],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [],
+                name: "getLatestTokens",
+                outputs: [
+                    { internalType: "address[]", name: "tokens", type: "address[]" }
+                ],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "tokenAddress", type: "address" },
+                    { indexed: true, internalType: "address", name: "owner", type: "address" },
+                    { indexed: false, internalType: "string", name: "name", type: "string" },
+                    { indexed: false, internalType: "string", name: "symbol", type: "string" }
+                ],
+                name: "TokenCreated",
+                type: "event"
+            }
+        ];
+
+        const tokenABI = [
+            {
+                inputs: [
+                    { internalType: "string", name: "name_", type: "string" },
+                    { internalType: "string", name: "symbol_", type: "string" },
+                    { internalType: "address", name: "creator", type: "address" }
+                ],
+                stateMutability: "nonpayable",
+                type: "constructor"
+            },
+            {
+                inputs: [],
+                name: "name",
+                outputs: [{ internalType: "string", name: "", type: "string" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [],
+                name: "symbol",
+                outputs: [{ internalType: "string", name: "", type: "string" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [],
+                name: "getMetadata",
+                outputs: [
+                    { internalType: "string", name: "", type: "string" },
+                    { internalType: "string", name: "", type: "string" },
+                    { internalType: "string", name: "", type: "string" },
+                    { internalType: "string", name: "", type: "string" },
+                    { internalType: "string", name: "", type: "string" }
+                ],
+                stateMutability: "view",
+                type: "function"
+            }
+        ];
+
+        const bsc = {
+            chainId: 56,
+            name: 'Binance Smart Chain',
+            explorerUrl: 'https://bscscan.com',
+            rpcUrl: 'https://bsc-dataseed.binance.org/'
+        };
+
+        async function connectWallet() {
+            const status = document.getElementById('networkStatus');
+            try {
+                if (!window.ethereum) {
+                    status.innerHTML = '> No wallet detected. Install <a href="https://metamask.io" target="_blank">MetaMask</a>.';
+                    throw new Error("No wallet detected");
+                }
+                status.innerText = "> Connecting...";
+                web3 = new Web3(window.ethereum);
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.length) {
+                    throw new Error("Please unlock your wallet or connect it.");
+                }
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 56) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x38' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x38',
+                                    chainName: 'Binance Smart Chain',
+                                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                    blockExplorerUrls: ['https://bscscan.com']
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                document.getElementById('walletAddress').innerText = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                tokenFactoryContract = new web3.eth.Contract(tokenFactoryABI, tokenFactoryAddress);
+                status.innerText = "> Connected to BSC";
+                fetchMyTokens();
+                fetchAllTokens();
+            } catch (error) {
+                console.error(error);
+                status.innerText = "> Error: " + error.message;
+            }
+        }
+
+        async function createToken() {
+            const section = document.getElementById('createTokenSection');
+            const status = document.getElementById('createStatus');
+            const name = document.getElementById('tokenName').value.trim();
+            const symbol = document.getElementById('tokenSymbol').value.trim();
+            if (!name || !symbol) return alert("Enter token name and symbol!");
+            if (!accounts) return alert("Connect your wallet first!");
+            try {
+                section.classList.add('loading');
+                status.innerText = "> Creating token...";
+                const gasPrice = await web3.eth.getGasPrice();
+                const adjustedGasPrice = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(15)).div(web3.utils.toBN(10));
+                const tx = await tokenFactoryContract.methods.createToken(name, symbol).send({
+                    from: accounts[0],
+                    gas: '3000000',
+                    gasPrice: adjustedGasPrice
+                });
+                const tokenAddress = tx.events.TokenCreated.returnValues.tokenAddress;
+                status.innerHTML = `> Token created! Address: <a href="${bsc.explorerUrl}/address/${tokenAddress}" target="_blank">${tokenAddress.slice(0, 6)}...${tokenAddress.slice(-4)}</a>`;
+                document.getElementById('tokenName').value = '';
+                document.getElementById('tokenSymbol').value = '';
+                fetchMyTokens();
+                fetchAllTokens();
+            } catch (error) {
+                console.error(error);
+                status.innerText = "> Error: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function fetchMyTokens() {
+            if (!accounts) return alert("Connect your wallet first!");
+            const section = document.getElementById('myTokensSection');
+            const status = document.getElementById('tokensStatus');
+            try {
+                section.classList.add('loading');
+                status.innerText = "> Fetching your tokens...";
+                const tokens = await tokenFactoryContract.methods.getLatestTokensByCreator(accounts[0]).call();
+                const tokensBody = document.getElementById('tokensBody');
+                tokensBody.innerHTML = '';
+                if (tokens.length === 0) {
+                    status.innerText = "> No tokens created yet!";
+                    return;
+                }
+                for (const token of tokens) {
+                    const tokenContract = new web3.eth.Contract(tokenABI, token);
+                    let name = 'Unknown';
+                    let symbol = 'Unknown';
+                    let metadata = ['Not set', 'Not set', 'Not set', 'Not set', 'Not set'];
+                    try {
+                        name = await tokenContract.methods.name().call();
+                        symbol = await tokenContract.methods.symbol().call();
+                        metadata = await tokenContract.methods.getMetadata().call();
+                    } catch (error) {
+                        console.warn(`Failed to fetch details for token ${token}: ${error.message}`);
+                    }
+                    const metadataStr = `
+                        Image: ${metadata[0] || 'Not set'}<br>
+                        Description: ${metadata[1] || 'Not set'}<br>
+                        Website: ${metadata[2] || 'Not set'}<br>
+                        Twitter: ${metadata[3] || 'Not set'}<br>
+                        Telegram: ${metadata[4] || 'Not set'}
+                    `;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            ${token.slice(0, 6)}...${token.slice(-4)}
+                            <button class="button copy-btn" onclick="copyToClipboard('${token}')">> Copy</button>
+                        </td>
+                        <td>${name}</td>
+                        <td>${symbol}</td>
+                        <td>${metadataStr}</td>
+                    `;
+                    tokensBody.appendChild(row);
+                }
+                status.innerText = "> Tokens loaded successfully!";
+            } catch (error) {
+                console.error(error);
+                status.innerText = "> Error: " + error.message;
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function fetchAllTokens() {
+            const section = document.getElementById('allTokensSection');
+            const status = document.getElementById('allTokensStatus');
+            try {
+                section.classList.add('loading');
+                status.innerText = "> Fetching latest tokens...";
+                const tokens = await tokenFactoryContract.methods.getLatestTokens().call();
+                const tokensBody = document.getElementById('allTokensBody');
+                tokensBody.innerHTML = '';
+                if (tokens.length === 0) {
+                    status.innerText = "> No tokens found!";
+                    return;
+                }
+                for (const token of tokens) {
+                    const tokenContract = new web3.eth.Contract(tokenABI, token);
+                    let name = 'Unknown';
+                    let symbol = 'Unknown';
+                    let metadata = ['Not set', 'Not set', 'Not set', 'Not set', 'Not set'];
+                    try {
+                        name = await tokenContract.methods.name().call();
+                        symbol = await tokenContract.methods.symbol().call();
+                        metadata = await tokenContract.methods.getMetadata().call();
+                    } catch (error) {
+                        console.warn(`Failed to fetch details for token ${token}: ${error.message}`);
+                    }
+                    const metadataStr = `
+                        Image: ${metadata[0] || 'Not set'}<br>
+                        Description: ${metadata[1] || 'Not set'}<br>
+                        Website: ${metadata[2] || 'Not set'}<br>
+                        Twitter: ${metadata[3] || 'Not set'}<br>
+                        Telegram: ${metadata[4] || 'Not set'}
+                    `;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            ${token.slice(0, 6)}...${token.slice(-4)}
+                            <button class="button copy-btn" onclick="copyToClipboard('${token}')">> Copy</button>
+                        </td>
+                        <td>${name}</td>
+                        <td>${symbol}</td>
+                        <td>${metadataStr}</td>
+                    `;
+                    tokensBody.appendChild(row);
+                }
+                status.innerText = "> Latest tokens loaded successfully!";
+            } catch (error) {
+                console.error(error);
+                status.innerText = "> Error: " + error.message;
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("> Address copied!");
+            }).catch(error => {
+                console.error('Failed to copy:', error);
+                alert("> Failed to copy address!");
+            });
+        }
+
+        document.getElementById('connectButton').addEventListener('click', connectWallet);
+        document.getElementById('createToken').addEventListener('click', createToken);
+        document.getElementById('fetchMyTokens').addEventListener('click', fetchMyTokens);
+        document.getElementById('fetchAllTokens').addEventListener('click', fetchAllTokens);
+
+        window.addEventListener('load', () => {
+            if (!window.location.protocol.startsWith('http')) {
+                document.getElementById('networkStatus').innerHTML = '> Run this via a local server (e.g., "npx serve") to connect MetaMask.';
+            } else if (!window.ethereum) {
+                document.getElementById('networkStatus').innerHTML = '> No wallet detected. Install <a href="https://metamask.io">MetaMask</a>.';
+            }
+        });
+
+        // Matrix background effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px VT323';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
+    </script>
+</body>
+</html>
