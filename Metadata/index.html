@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jace Token Metadata Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'VT323', monospace; 
+            background: #000; 
+            color: #0f0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.6; 
+            overflow-x: hidden; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 25px; 
+            background: rgba(0, 255, 0, 0.1); 
+            border: 2px solid #0f0; 
+            border-radius: 5px; 
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3); 
+        }
+        h1 { 
+            text-align: center; 
+            color: #0f0; 
+            font-size: clamp(1.8em, 5vw, 2.5em); 
+            margin-bottom: 20px; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 10px #0f0; 
+            animation: flicker 1.5s infinite alternate; 
+        }
+        .section, .info-section { 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border: 1px solid #0f0; 
+            border-radius: 5px; 
+        }
+        h2 { 
+            color: #0f0; 
+            font-size: clamp(1.1em, 3vw, 1.5em); 
+            margin-bottom: 15px; 
+            text-shadow: 0 0 5px #0f0; 
+        }
+        .button { 
+            background: transparent; 
+            color: #0f0; 
+            padding: 10px 20px; 
+            border: 2px solid #0f0; 
+            border-radius: 5px; 
+            font-family: 'VT323', monospace; 
+            font-size: 1.2em; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            margin: 5px; 
+        }
+        .button:hover { 
+            background: #0f0; 
+            color: #000; 
+            box-shadow: 0 0 15px #0f0; 
+            transform: translateY(-2px); 
+        }
+        .button:disabled { 
+            color: #555; 
+            border-color: #555; 
+            cursor: not-allowed; 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 2px solid #0f0; 
+            border-radius: 5px; 
+            background: #111; 
+            color: #0f0; 
+            font-family: 'VT323', monospace; 
+            font-size: 1.2em; 
+        }
+        input::placeholder { 
+            color: #555; 
+        }
+        .status { 
+            margin-top: 10px; 
+            font-size: 1em; 
+            color: #0f0; 
+            text-shadow: 0 0 5px #0f0; 
+        }
+        .wallet-info { 
+            color: #0f0; 
+            font-weight: 600; 
+            word-break: break-all; 
+        }
+        .metadata-display { 
+            margin-top: 15px; 
+            font-size: 1.1em; 
+        }
+        .metadata-display p { 
+            margin: 5px 0; 
+        }
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 20px; 
+            font-size: 1em; 
+            color: #0f0; 
+        }
+        .footer a, .info-section a { 
+            color: #0f0; 
+            text-decoration: none; 
+        }
+        .footer a:hover, .info-section a:hover { 
+            text-decoration: underline; 
+            text-shadow: 0 0 10px #0f0; 
+        }
+        canvas { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: -1; 
+            opacity: 0.2; 
+        }
+        @keyframes flicker { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.8; } 
+            100% { opacity: 1; } 
+        }
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .section, .info-section { padding: 15px; }
+            .button { width: 100%; padding: 10px; }
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.2em; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="container">
+        <h1>Jace Token Metadata Manager</h1>
+        <div class="info-section">
+            <p>> Create tokens at <a href="https://YOUR_TOKENFACTORY_URL">Jace TokenFactory</a> (Factory: <a href="https://bscscan.com/address/0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6" target="_blank">0x2D71ba...ABfFF6B6</a>) and manage metadata here.</p>
+        </div>
+        <div class="section">
+            <h2>> Connect to BSC</h2>
+            <button id="connectButton" class="button">> Connect Wallet</button>
+            <p>Wallet: <span id="walletAddress" class="wallet-info">Not connected</span></p>
+            <div id="networkStatus" class="status">> Click to connect...</div>
+        </div>
+        <div class="section" id="verifySection">
+            <h2>> Verify Token Ownership</h2>
+            <input type="text" id="tokenAddress" placeholder="Enter Token Contract Address">
+            <button id="verifyOwner" class="button">> Verify Owner</button>
+            <div id="verifyStatus" class="status"></div>
+            <div id="metadataDisplay" class="metadata-display"></div>
+        </div>
+        <div class="section" id="metadataSection" style="display: none;">
+            <h2>> Set Metadata</h2>
+            <input type="text" id="imageUrl" placeholder="Image URL">
+            <input type="text" id="description" placeholder="Description">
+            <input type="text" id="websiteUrl" placeholder="Website URL">
+            <input type="text" id="twitterUrl" placeholder="Twitter URL">
+            <input type="text" id="telegramUrl" placeholder="Telegram URL">
+            <button id="setMetadata" class="button">> Set Metadata</button>
+            <div id="metadataStatus" class="status"></div>
+        </div>
+        <div class="footer">
+            Powered by <a href="https://bscscan.com/" target="_blank">BSC</a> | Jace Token Metadata Manager © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, accounts, tokenContract;
+        const tokenABI = [
+            { inputs: [], name: "owner", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            { inputs: [
+                { internalType: "string", name: "_imageUrl", type: "string" },
+                { internalType: "string", name: "_description", type: "string" },
+                { internalType: "string", name: "_websiteUrl", type: "string" },
+                { internalType: "string", name: "_twitterUrl", type: "string" },
+                { internalType: "string", name: "_telegramUrl", type: "string" }
+            ], name: "setMetadata", outputs: [], stateMutability: "nonpayable", type: "function" },
+            { inputs: [], name: "getMetadata", outputs: [
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" }
+            ], stateMutability: "view", type: "function" }
+        ];
+        const bsc = {
+            chainId: 56,
+            name: 'Binance Smart Chain',
+            explorerUrl: 'https://bscscan.com',
+            rpcUrl: 'https://bsc-dataseed.binance.org/'
+        };
+
+        async function connectWallet() {
+            const status = document.getElementById('networkStatus');
+            try {
+                if (!window.ethereum) {
+                    status.innerHTML = '> No wallet detected. Install <a href="https://metamask.io">MetaMask</a>.';
+                    throw new Error("No wallet detected");
+                }
+                status.innerText = "> Connecting...";
+                web3 = new Web3(window.ethereum);
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.length) throw new Error("Please unlock wallet.");
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 56) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x38' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x38',
+                                    chainName: 'Binance Smart Chain',
+                                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                    blockExplorerUrls: ['https://bscscan.com']
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                document.getElementById('walletAddress').innerText = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                status.innerText = "> Connected to BSC";
+            } catch (error) {
+                status.innerText = "> Error: " + error.message;
+            }
+        }
+
+        async function verifyOwner() {
+            const section = document.getElementById('verifySection');
+            const status = document.getElementById('verifyStatus');
+            const tokenAddress = document.getElementById('tokenAddress').value.trim();
+            const metadataDisplay = document.getElementById('metadataDisplay');
+            const metadataSection = document.getElementById('metadataSection');
+            if (!accounts) return alert("> Connect wallet first!");
+            if (!web3.utils.isAddress(tokenAddress)) return status.innerText = "> Invalid contract address!";
+            try {
+                section.classList.add('loading');
+                status.innerText = "> Verifying ownership...";
+                tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+                const owner = await tokenContract.methods.owner().call();
+                let metadata = ['Not set', 'Not set', 'Not set', 'Not set', 'Not set'];
+                try {
+                    metadata = await tokenContract.methods.getMetadata().call();
+                } catch (error) {
+                    console.warn(`Failed to fetch metadata: ${error.message}`);
+                }
+                metadataDisplay.innerHTML = `
+                    <p>> Image URL: ${metadata[0] || 'Not set'}</p>
+                    <p>> Description: ${metadata[1] || 'Not set'}</p>
+                    <p>> Website: ${metadata[2] || 'Not set'}</p>
+                    <p>> Twitter: ${metadata[3] || 'Not set'}</p>
+                    <p>> Telegram: ${metadata[4] || 'Not set'}</p>
+                `;
+                if (owner.toLowerCase() === accounts[0].toLowerCase()) {
+                    status.innerText = "> You are the owner!";
+                    metadataSection.style.display = 'block';
+                } else {
+                    status.innerText = "> Not the owner.";
+                    metadataSection.style.display = 'none';
+                }
+            } catch (error) {
+                status.innerText = "> Error: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function setMetadata() {
+            const section = document.getElementById('metadataSection');
+            const status = document.getElementById('metadataStatus');
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const websiteUrl = document.getElementById('websiteUrl').value.trim();
+            const twitterUrl = document.getElementById('twitterUrl').value.trim();
+            const telegramUrl = document.getElementById('telegramUrl').value.trim();
+            if (!accounts) return alert("> Connect wallet first!");
+            if (!tokenContract) return alert("> Verify contract first!");
+            try {
+                section.classList.add('loading');
+                status.innerText = "> Setting metadata...";
+                const gasPrice = await web3.eth.getGasPrice();
+                const adjustedGasPrice = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(15)).div(web3.utils.toBN(10));
+                await tokenContract.methods.setMetadata(imageUrl, description, websiteUrl, twitterUrl, telegramUrl).send({
+                    from: accounts[0],
+                    gas: '1000000',
+                    gasPrice: adjustedGasPrice
+                });
+                status.innerText = "> Metadata set!";
+                document.getElementById('imageUrl').value = '';
+                document.getElementById('description').value = '';
+                document.getElementById('websiteUrl').value = '';
+                document.getElementById('twitterUrl').value = '';
+                document.getElementById('telegramUrl').value = '';
+                verifyOwner();
+            } catch (error) {
+                status.innerText = "> Error: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        document.getElementById('connectButton').addEventListener('click', connectWallet);
+        document.getElementById('verifyOwner').addEventListener('click', verifyOwner);
+        document.getElementById('setMetadata').addEventListener('click', setMetadata);
+
+        window.addEventListener('load', () => {
+            if (!window.location.protocol.startsWith('http')) {
+                document.getElementById('networkStatus').innerHTML = '> Run via local server (e.g., "npx serve") for MetaMask.';
+            } else if (!window.ethereum) {
+                document.getElementById('networkStatus').innerHTML = '> No wallet. Install <a href="https://metamask.io">MetaMask</a>.';
+            }
+        });
+
+        // Matrix background
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px VT323';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
+    </script>
+</body>
+</html>
