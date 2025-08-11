@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jace Token List</title>
+    <link rel="icon" type="image/png" href="https://woofswap.finance/image/tokens/WOOF.png">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'VT323', monospace;
+            background: #000;
+            color: #0f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #0f0;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 1.2em;
+            text-shadow: 0 0 5px #0f0;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+            text-shadow: 0 0 10px #0f0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: clamp(1.8em, 5vw, 2.2em);
+            color: #0f0;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #0f0;
+            animation: flicker 1.5s infinite alternate;
+        }
+        .connect-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .connect-section button {
+            background: transparent;
+            color: #0f0;
+            padding: 10px 20px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .connect-section button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+            transform: translateY(-2px);
+        }
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            background: #111;
+            color: #0f0;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            outline: none;
+        }
+        .search-box input::placeholder {
+            color: #555;
+        }
+        .search-box button {
+            background: transparent;
+            color: #0f0;
+            padding: 10px 20px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .search-box button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+        .waterfall {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px 0;
+        }
+        .post-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            transition: box-shadow 0.2s;
+        }
+        .post-card:hover {
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-header img.avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+            border: 1px solid #0f0;
+        }
+        .post-header div {
+            flex-grow: 1;
+        }
+        .post-header h3 {
+            font-size: 1.2em;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        .post-header span {
+            font-size: 1em;
+            color: #0f0;
+        }
+        .post-header .copy-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .post-header .copy-button img {
+            width: 16px;
+            height: 16px;
+            filter: invert(70%) sepia(100%) saturate(1000%) hue-rotate(80deg);
+        }
+        .post-header .copy-button .tooltip {
+            visibility: hidden;
+            background: #000;
+            color: #0f0;
+            font-size: 0.9em;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: absolute;
+            top: -30px;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .post-header .copy-button.copied .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .post-content p.description {
+            font-size: 1.1em;
+            color: #0f0;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .post-content .info {
+            font-size: 1em;
+            color: #0f0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .post-content .info img {
+            width: 16px;
+            height: 16px;
+            filter: invert(70%) sepia(100%) saturate(1000%) hue-rotate(80deg);
+        }
+        .post-content .info a {
+            color: #0f0;
+            text-decoration: none;
+        }
+        .post-content .info a:hover {
+            text-decoration: underline;
+            text-shadow: 0 0 10px #0f0;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .action-buttons button {
+            background: transparent;
+            color: #0f0;
+            padding: 8px 16px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .action-buttons button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+        .action-buttons .copy-contract-button .tooltip {
+            visibility: hidden;
+            background: #000;
+            color: #0f0;
+            font-size: 0.9em;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .action-buttons .copy-contract-button.copied .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .status {
+            font-size: 1em;
+            color: #0f0;
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        .footer {
+            font-size: 1em;
+            color: #0f0;
+            text-align: center;
+            margin-top: auto;
+            padding: 20px 0;
+        }
+        .footer a {
+            color: #0f0;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+            text-shadow: 0 0 10px #0f0;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.2;
+        }
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .search-box { flex-direction: column; }
+            .search-box input, .search-box button { width: 100%; }
+            .post-header h3 { font-size: 1.1em; }
+            .post-content p.description { font-size: 1em; }
+            .action-buttons { flex-direction: column; gap: 8px; }
+            .nav a { display: block; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="nav">
+        <a href="https://woofingfun.github.io/TokenFactory/" target="_blank">> Create Token</a>
+        <a href="https://woofingfun.github.io/TokenFactory/Metadata" target="_blank">> Manage Metadata</a>
+    </div>
+    <div class="header">
+        <h1>Jace Token List</h1>
+    </div>
+    <div class="connect-section">
+        <button id="connectWalletButton" aria-label="Connect MetaMask wallet">> Connect Wallet</button>
+    </div>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="tokenAddress" placeholder="Search Token by Contract Address" aria-label="Search by contract address">
+            <button id="searchButton" aria-label="Search token">> Search</button>
+        </div>
+        <div id="searchStatus" class="status"></div>
+    </div>
+    <div class="waterfall" id="waterfall"></div>
+    <div class="footer">
+        <p>
+            <a href="https://woofingfun.github.io/TokenFactory/" target="_blank">> Create Token</a>
+            <a href="https://woofingfun.github.io/TokenFactory/Metadata" target="_blank">> Manage Metadata</a>
+        </p>
+        Powered by <a href="https://bscscan.com/" target="_blank">BSC</a> | Jace Token List © 2025
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, accounts, tokenFactoryContract;
+        const tokenFactoryAddress = "0x2D71ba45c6E88b9F819ebD93a263594dABfFF6B6";
+        const tokenFactoryABI = [
+            { inputs: [], name: "getLatestTokens", outputs: [{ internalType: "address[]", name: "tokens", type: "address[]" }], stateMutability: "view", type: "function" }
+        ];
+        const tokenABI = [
+            { inputs: [], name: "name", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "symbol", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "getMetadata", outputs: [
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" },
+                { internalType: "string", name: "", type: "string" }
+            ], stateMutability: "view", type: "function" },
+            { inputs: [], name: "owner", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" }
+        ];
+        const bsc = {
+            chainId: 56,
+            name: 'Binance Smart Chain',
+            explorerUrl: 'https://bscscan.com',
+            rpcUrl: 'https://bsc-dataseed.binance.org/'
+        };
+
+        function shortenAddress(address) {
+            if (!address || address === "0x0000000000000000000000000000000000000000") return "None";
+            return `${address.slice(0, 6)}...${address.slice(-4)}`;
+        }
+
+        async function initializeWeb3() {
+            web3 = new Web3(bsc.rpcUrl);
+            tokenFactoryContract = new web3.eth.Contract(tokenFactoryABI, tokenFactoryAddress);
+            fetchLatestCoins();
+        }
+
+        async function connectWallet() {
+            const status = document.getElementById('searchStatus');
+            try {
+                if (!window.ethereum) {
+                    status.innerText = '> Install MetaMask.';
+                    throw new Error("No wallet detected");
+                }
+                status.innerText = "> Connecting...";
+                web3 = new Web3(window.ethereum);
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.length) throw new Error("Unlock wallet.");
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 56) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x38' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x38',
+                                    chainName: 'Binance Smart Chain',
+                                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                    blockExplorerUrls: ['https://bscscan.com']
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                document.getElementById('connectWalletButton').innerText = `> Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                status.innerText = "> Connected to BSC";
+            } catch (error) {
+                status.innerText = "> Error: " + error.message;
+            }
+        }
+
+        async function fetchLatestCoins() {
+            const status = document.getElementById('searchStatus');
+            const waterfall = document.getElementById('waterfall');
+            try {
+                status.innerText = "> Fetching tokens...";
+                const tokens = await tokenFactoryContract.methods.getLatestTokens().call();
+                waterfall.innerHTML = '';
+                if (!tokens.length) {
+                    waterfall.innerHTML = '<div class="status">> No tokens found.</div>';
+                    return;
+                }
+                for (const token of tokens.slice(0, 100)) {
+                    const tokenContract = new web3.eth.Contract(tokenABI, token);
+                    let name = 'Unknown', symbol = 'Unknown', metadata = ['', '', '', '', ''], owner = 'None';
+                    try {
+                        name = await tokenContract.methods.name().call();
+                        symbol = await tokenContract.methods.symbol().call();
+                        metadata = await tokenContract.methods.getMetadata().call();
+                        owner = await tokenContract.methods.owner().call();
+                    } catch (error) {
+                        console.warn(`Failed to fetch token ${token}: ${error.message}`);
+                    }
+                    const shortOwner = shortenAddress(owner);
+                    const card = document.createElement('div');
+                    card.className = 'post-card';
+                    card.innerHTML = `
+                        <div class="post-header">
+                            <img class="avatar" src="${metadata[0] || 'https://woofswap.finance/image/tokens/WOOF.png'}" alt="Token">
+                            <div>
+                                <h3>${name} (${symbol})</h3>
+                                <span>> Created by ${shortOwner}</span>
+                            </div>
+                            <button class="copy-button" data-address="${owner}" aria-label="Copy owner address">
+                                <img src="https://img.icons8.com/ios-filled/16/000000/copy.png" alt="Copy">
+                                <span class="tooltip">> Copied!</span>
+                            </button>
+                        </div>
+                        <div class="post-content">
+                            <p class="description">> ${metadata[1] || 'No description.'}</p>
+                            <div class="info">
+                                <img src="https://img.icons8.com/ios-filled/16/000000/link.png" alt="Website">
+                                <a href="${metadata[2] || '#'}" target="_blank">${metadata[2] ? new URL(metadata[2]).hostname : 'No website'}</a>
+                            </div>
+                            <div class="info">
+                                <img src="https://img.icons8.com/ios-filled/16/000000/twitter.png" alt="Twitter">
+                                <a href="${metadata[3] || '#'}" target="_blank">${metadata[3] ? '@' + metadata[3].split('/').pop() : 'No Twitter'}</a>
+                            </div>
+                            <div class="info">
+                                <img src="https://img.icons8.com/ios-filled/16/000000/telegram-app.png" alt="Telegram">
+                                <a href="${metadata[4] || '#'}" target="_blank">${metadata[4] ? metadata[4].split('/').pop() : 'No Telegram'}</a>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="copy-contract-button" data-address="${token}" aria-label="Copy contract address">> Copy Contract<span class="tooltip">> Copied!</span></button>
+                        </div>
+                    `;
+                    waterfall.appendChild(card);
+                }
+                status.innerText = "";
+                document.querySelectorAll('.copy-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const address = button.dataset.address;
+                        if (address && address !== "None") {
+                            navigator.clipboard.writeText(address).then(() => {
+                                button.classList.add('copied');
+                                alert("> Copied!");
+                                setTimeout(() => button.classList.remove('copied'), 2000);
+                            }).catch(() => alert("> Copy failed!"));
+                        }
+                    });
+                });
+                document.querySelectorAll('.copy-contract-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const address = button.dataset.address;
+                        if (address) {
+                            navigator.clipboard.writeText(address).then(() => {
+                                button.classList.add('copied');
+                                alert("> Copied!");
+                                setTimeout(() => button.classList.remove('copied'), 2000);
+                            }).catch(() => alert("> Copy failed!"));
+                        }
+                    });
+                });
+            } catch (error) {
+                status.innerText = "> Error: " + error.message;
+            }
+        }
+
+        async function searchToken() {
+            const status = document.getElementById('searchStatus');
+            const waterfall = document.getElementById('waterfall');
+            const tokenAddress = document.getElementById('tokenAddress').value.trim();
+            if (!web3.utils.isAddress(tokenAddress)) return status.innerText = "> Invalid address!";
+            try {
+                status.innerText = "> Searching token...";
+                const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+                let name, symbol, metadata, owner;
+                try {
+                    name = await tokenContract.methods.name().call();
+                    symbol = await tokenContract.methods.symbol().call();
+                    metadata = await tokenContract.methods.getMetadata().call();
+                    owner = await tokenContract.methods.owner().call();
+                } catch (error) {
+                    throw new Error("Failed to fetch token: " + error.message);
+                }
+                const shortOwner = shortenAddress(owner);
+                waterfall.innerHTML = '';
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    <div class="post-header">
+                        <img class="avatar" src="${metadata[0] || 'https://woofswap.finance/image/tokens/WOOF.png'}" alt="Token">
+                        <div>
+                            <h3>${name} (${symbol})</h3>
+                            <span>> Created by ${shortOwner}</span>
+                        </div>
+                        <button class="copy-button" data-address="${owner}" aria-label="Copy owner address">
+                            <img src="https://img.icons8.com/ios-filled/16/000000/copy.png" alt="Copy">
+                            <span class="tooltip">> Copied!</span>
+                        </button>
+                    </div>
+                    <div class="post-content">
+                        <p class="description">> ${metadata[1] || 'No description.'}</p>
+                        <div class="info">
+                            <img src="https://img.icons8.com/ios-filled/16/000000/link.png" alt="Website">
+                            <a href="${metadata[2] || '#'}" target="_blank">${metadata[2] ? new URL(metadata[2]).hostname : 'No website'}</a>
+                        </div>
+                        <div class="info">
+                            <img src="https://img.icons8.com/ios-filled/16/000000/twitter.png" alt="Twitter">
+                            <a href="${metadata[3] || '#'}" target="_blank">${metadata[3] ? '@' + metadata[3].split('/').pop() : 'No Twitter'}</a>
+                        </div>
+                        <div class="info">
+                            <img src="https://img.icons8.com/ios-filled/16/000000/telegram-app.png" alt="Telegram">
+                            <a href="${metadata[4] || '#'}" target="_blank">${metadata[4] ? metadata[4].split('/').pop() : 'No Telegram'}</a>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="copy-contract-button" data-address="${tokenAddress}" aria-label="Copy contract address">> Copy Contract<span class="tooltip">> Copied!</span></button>
+                    </div>
+                `;
+                waterfall.appendChild(card);
+                status.innerText = "";
+                document.querySelector('.copy-button').addEventListener('click', () => {
+                    const address = document.querySelector('.copy-button').dataset.address;
+                    if (address && address !== "None") {
+                        navigator.clipboard.writeText(address).then(() => {
+                            document.querySelector('.copy-button').classList.add('copied');
+                            alert("> Copied!");
+                            setTimeout(() => document.querySelector('.copy-button').classList.remove('copied'), 2000);
+                        }).catch(() => alert("> Copy failed!"));
+                    }
+                });
+                document.querySelector('.copy-contract-button').addEventListener('click', () => {
+                    const address = document.querySelector('.copy-contract-button').dataset.address;
+                    if (address) {
+                        navigator.clipboard.writeText(address).then(() => {
+                            document.querySelector('.copy-contract-button').classList.add('copied');
+                            alert("> Copied!");
+                            setTimeout(() => document.querySelector('.copy-contract-button').classList.remove('copied'), 2000);
+                        }).catch(() => alert("> Copy failed!"));
+                    }
+                });
+            } catch (error) {
+                status.innerText = "> Error: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() : error.message);
+            }
+        }
+
+        document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
+        document.getElementById('searchButton').addEventListener('click', searchToken);
+
+        window.addEventListener('load', () => {
+            if (!window.location.protocol.includes('http')) {
+                document.getElementById('searchStatus').innerText = '> Run via local server (e.g., "npx serve").';
+            } else {
+                initializeWeb3();
+            }
+        });
+
+        // Matrix background
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px VT323';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
+    </script>
+</body>
+</html>
